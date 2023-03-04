@@ -42,6 +42,8 @@ class AutoClustering:
     def fit(self, X):
         """
         Main method of AutoClustering, it runs the optimization with ray and optuna
+
+        Parameters
         ----------
         X : array-like of shape (n_samples, n_features)
             The data to fit. Can be for example a list, or an array.
@@ -51,7 +53,7 @@ class AutoClustering:
         config = {"algorithm": tune.choice(list(search_space.keys())),
                   "search_space": search_space}
 
-        tuner = tune.Tuner(tune.with_parameters(self.train, X=X),
+        tuner = tune.Tuner(tune.with_parameters(self._train, X=X),
                            param_space=config,
                            tune_config=tune.TuneConfig(
                                search_alg=OptunaSearch(),
@@ -76,7 +78,8 @@ class AutoClustering:
 
         return self
 
-    def train(self, config, X):
+    @staticmethod
+    def _train(config, X):
         """
         Runs one iteration of the pipeline search
 
