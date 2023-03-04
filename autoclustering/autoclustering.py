@@ -1,6 +1,10 @@
+import warnings
+import multiprocessing
 import numpy as np
+import ray
 from ray import tune
 from ray.tune.search.optuna import OptunaSearch
+from ray.air import ScalingConfig
 from hdbscan import HDBSCAN
 
 from ray.air import RunConfig
@@ -31,11 +35,6 @@ class AutoClustering:
     n_jobs: int, default=1 Maximum number of trials to run
             concurrently. Must be non-negative. If None or 0, no limit will
             be applied.
-
-    Returns
-    -------
-    score: dict
-        Dict with popular clustering metrics
     """
 
     def __init__(self,
@@ -47,7 +46,27 @@ class AutoClustering:
         self.metric = metric
 
         self.verbose = verbose
-        self.n_jobs = n_jobs
+        self.n_jobs = int(n_jobs or -1)
+
+        if self.n_jobs < 0:
+            resources_per_trial = {"cpu": 1}
+            if self.n_jobs < -1:
+                warnings.warn(
+                    "`self.n_jobs` is automatically set "
+                    "-1 for any negative values.",
+                    category=UserWarning)
+        else:
+            available_cpus = multiprocessing.cpu_count()
+            if ray.is_initialized():
+                available_cpus = ray.cluster_resources()["CPU"]
+
+            cpu_fraction = available_cpus / self.n_jobs
+            if cpu_fraction > 1:
+                cpu_fraction = int(np.ceil(cpu_fraction))
+
+            resources_per_trial = {"cpu": cpu_fraction}
+
+        self.resources_per_trial = resources_per_trial
 
     def fit(self, X):
         """
@@ -63,28 +82,25 @@ class AutoClustering:
         config = {"algorithm": tune.choice(list(search_space.keys())),
                   "search_space": search_space}
 
-        tuner = tune.Tuner(tune.with_parameters(self._train, X=X),
-                           param_space=config,
-                           tune_config=tune.TuneConfig(
-                               search_alg=OptunaSearch(),
-                               max_concurrent_trials=self.n_jobs,
-                               metric=self.metric,
-                               mode=self.optimization_mode_,
-                               num_samples=self.num_samples),
-                           run_config=RunConfig(verbose=self.verbose)
-                           )
-        trial_result = tuner.fit()
+        analysis = tune.run(tune.with_parameters(self._train, X=X),
+                            config=config,
+                            metric=self.metric,
+                            mode=self.optimization_mode_,
+                            num_samples=self.num_samples,
+                            search_alg=OptunaSearch(),
+                            resources_per_trial=self.resources_per_trial,
+                            verbose=self.verbose)
 
-        best_result = trial_result.get_best_result(metric=self.metric, mode=self.optimization_mode_)
+        best_result = analysis.best_result
 
         # Refit best pipeline
-        best_pipeline = best_result.config["algorithm"]
-        best_model = best_result.config["search_space"][best_pipeline]
+        best_pipeline = best_result["config"]["algorithm"]
+        best_model = best_result["config"]["search_space"][best_pipeline]
 
         self.best_estimator_ = best_model["pipe"]
         self.best_params_ = best_model["params"]
         self.best_estimator_.set_params(**self.best_params_).fit(X)
-        self.best_score_ = best_result.metrics[self.metric]
+        self.best_score_ = best_result[self.metric]
 
         return self
 

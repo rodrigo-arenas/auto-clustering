@@ -8,7 +8,7 @@
 .. |Codecov| image:: https://codecov.io/gh/rodrigo-arenas/auto-clustering/branch/master/graphs/badge.svg?branch=master&service=github
 .. _Codecov: https://codecov.io/github/rodrigo-arenas/auto-clustering?branch=main
 
-.. |PythonVersion| image:: https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue
+.. |PythonVersion| image:: https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue
 .. _PythonVersion : https://www.python.org/downloads/
 .. |PyPi| image:: https://badge.fury.io/py/auto-clustering.svg
 .. _PyPi: https://badge.fury.io/py/auto-clustering
@@ -41,7 +41,10 @@ Example: Clustering Selection
 
    data, _ = load_digits(return_X_y=True)
 
-   clustering = AutoClustering(num_samples=50, metric='validity_index', verbose=0)
+   clustering = AutoClustering(num_samples=50,
+                               metric='validity_index',
+                               n_jobs=-1,
+                               verbose=0)
 
    clustering.fit(data)
 
@@ -49,6 +52,8 @@ Example: Clustering Selection
    clustering.best_score_
    clustering.n_clusters_
    clustering.best_estimator_
+
+   clustering.predict(data)
 
 Changelog
 #########
