@@ -5,6 +5,8 @@ AutoClustering
 
 .. autosummary:: AutoClustering
    AutoClustering.fit
+   AutoClustering.predict
+   AutoClustering.AutoClustering.predict_predict
 
 
 .. autoclass:: autoclustering.AutoClustering

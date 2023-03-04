@@ -20,6 +20,7 @@ Example: Clustering Selection
 
    clustering = AutoClustering(num_samples=50,
                                metric='validity_index',
+                               n_jobs=2,
                                verbose=0)
 
    clustering.fit(data)
@@ -28,3 +29,5 @@ Example: Clustering Selection
    clustering.best_score_
    clustering.n_clusters_
    clustering.best_estimator_
+
+   clustering.predict(data)

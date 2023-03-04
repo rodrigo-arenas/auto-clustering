@@ -1,11 +1,15 @@
 import numpy as np
 from ray import tune
 from ray.tune.search.optuna import OptunaSearch
+from hdbscan import HDBSCAN
 
 from ray.air import RunConfig
 from .configs import clustering_config, preprocessing_config, dimensionality_config
 from .pipelines import get_pipelines
 from .utils import score_candidate
+
+from sklearn.base import clone
+from sklearn.utils.validation import check_is_fitted
 
 
 class AutoClustering:
@@ -24,11 +28,16 @@ class AutoClustering:
         1 = only status updates,
         2 = status and brief results,
         3 = status and detailed results.
+    n_jobs: int, default=1 Maximum number of trials to run
+            concurrently. Must be non-negative. If None or 0, no limit will
+            be applied.
+
     Returns
     -------
     score: dict
         Dict with popular clustering metrics
     """
+
     def __init__(self,
                  num_samples: int = 100,
                  metric: str = 'validity_index',
@@ -36,6 +45,7 @@ class AutoClustering:
                  n_jobs=1):
         self.num_samples = num_samples
         self.metric = metric
+
         self.verbose = verbose
         self.n_jobs = n_jobs
 
@@ -77,6 +87,51 @@ class AutoClustering:
         self.best_score_ = best_result.metrics[self.metric]
 
         return self
+
+    def fit_predict(self, X):
+        """
+        Compute cluster and predict cluster index for each sample.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data to transform.
+
+        Returns
+        -------
+
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
+        check_is_fitted(self)
+
+        return self.best_estimator_.fit_predict(X)
+
+    def predict(self, X):
+        """
+        Predict the closest cluster each sample in X belongs to.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            New data to predict.
+
+        Returns
+        -------
+
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
+        """
+        check_is_fitted(self)
+
+        if isinstance(self.best_estimator_.named_steps["clustering"], HDBSCAN):
+            temp_params = {**self.best_params_, "clustering__prediction_data": True}
+            estimator = clone(self.best_estimator_)
+            estimator.set_params(**temp_params)
+            estimator.fit(X)
+            return estimator.named_steps["clustering"].labels_
+
+        return self.best_estimator_.predict(X)
 
     @staticmethod
     def _train(config, X):
