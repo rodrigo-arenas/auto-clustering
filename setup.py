@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 # twine upload --skip-existing dist/*
 
 # get __version__ from _version.py
-ver_file = os.path.join("sklearn_genetic", "_version.py")
+ver_file = os.path.join("autoclustering", "_version.py")
 with open(ver_file) as f:
     exec(f.read())
 
@@ -14,9 +14,9 @@ HERE = pathlib.Path(__file__).parent
 
 README = (HERE / "README.rst").read_text()
 setup(
-    name="sklearn-genetic-opt",
+    name="auto-clustering",
     version=__version__,
-    description="Automatic Clustering Selection",
+    description="Automatic Clustering selection with Ray Tune",
     long_description=README,
     long_description_content_type="text/x-rst",
     url="https://github.com/rodrigo-arenas/auto-clustering",
