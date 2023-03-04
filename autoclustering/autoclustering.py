@@ -3,7 +3,7 @@ from ray import tune
 from ray.tune.search.optuna import OptunaSearch
 
 from ray.air import RunConfig
-from .configs import clustering_config, preprocessing_config
+from .configs import clustering_config, preprocessing_config, dimensionality_config
 from .pipelines import get_pipelines
 from .utils import score_candidate
 
@@ -46,7 +46,7 @@ class AutoClustering:
         X : array-like of shape (n_samples, n_features)
             The data to fit. Can be for example a list, or an array.
         """
-        search_space = get_pipelines(preprocessing_config, clustering_config)
+        search_space = get_pipelines(preprocessing_config, clustering_config, dimensionality_config)
 
         config = {"algorithm": tune.choice(list(search_space.keys())),
                   "search_space": search_space}

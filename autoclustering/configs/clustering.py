@@ -1,6 +1,6 @@
+from ray import tune
 from sklearn.cluster import DBSCAN, AffinityPropagation, OPTICS
 from hdbscan import HDBSCAN
-from ray import tune
 
 clustering_config = [
     {"model": DBSCAN(), "params": {"eps": tune.loguniform(0.5, 4),
