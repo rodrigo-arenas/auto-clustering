@@ -43,6 +43,7 @@ setup(
         "ray[tune]>=2.3.0",
         "optuna>=3.0.0",
         "dirty-cat>=0.4.0",
+        "hdbscan>=0.8.27",
     ],
     python_requires=">=3.9",
     include_package_data=True,
