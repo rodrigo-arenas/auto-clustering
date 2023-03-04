@@ -9,8 +9,28 @@ from .utils import score_candidate
 
 
 class AutoClustering:
+    """
+    Automatic Clustering Selection with Ray Tune
+
+    Parameters
+    ----------
+    num_samples : int, default=100
+        Number of times to sample from the hyperparameter space.
+    metric : str, default='validity_index'
+        Metric to optimize.
+    verbose : int, default=0
+        Verbosity mode.
+        0 = silent,
+        1 = only status updates,
+        2 = status and brief results,
+        3 = status and detailed results.
+    Returns
+    -------
+    score: dict
+        Dict with popular clustering metrics
+    """
     def __init__(self,
-                 num_samples: int = 50,
+                 num_samples: int = 100,
                  metric: str = 'validity_index',
                  verbose=0,
                  n_jobs=1):
@@ -20,6 +40,12 @@ class AutoClustering:
         self.n_jobs = n_jobs
 
     def fit(self, X):
+        """
+        Main method of AutoClustering, it runs the optimization with ray and optuna
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            The data to fit. Can be for example a list, or an array.
+        """
         search_space = get_pipelines(preprocessing_config, clustering_config)
 
         config = {"algorithm": tune.choice(list(search_space.keys())),
@@ -51,6 +77,16 @@ class AutoClustering:
         return self
 
     def train(self, config, X):
+        """
+        Runs one iteration of the pipeline search
+
+        Parameters
+        ----------
+        config : dict
+            configuration sampled from the search space
+        X : array-like of shape (n_samples, n_features)
+            The data to fit. Can be for example a list, or an array.
+        """
         algorithm = config["algorithm"]
         pipeline_dict = config["search_space"][algorithm]
 
@@ -64,6 +100,11 @@ class AutoClustering:
 
     @property
     def optimization_mode_(self):
+        """
+        Returns
+        -------
+        Indicates whether to maximize or minimize the metric
+        """
         modes_map = {"validity_index": 'max',
                      "davies_bouldin": 'min',
                      "silhouette": 'max',
@@ -78,6 +119,11 @@ class AutoClustering:
 
     @property
     def n_clusters_(self):
+        """
+        Returns
+        -------
+        Number of clusters found during fit time
+        """
         labels = self.best_estimator_.named_steps["clustering"].labels_
 
         return len(np.unique(labels))

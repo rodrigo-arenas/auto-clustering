@@ -11,7 +11,9 @@ def score_candidate(pipe, X):
     Parameters
     ----------
     pipe : sklearn.pipeline.Pipeline
-    X : pd.DataFrame
+        pipeline to evaluate the results
+    X : array-like of shape (n_samples, n_features)
+            The data to fit. Can be for example a list, or an array.
 
     Returns
     -------
@@ -27,6 +29,7 @@ def score_candidate(pipe, X):
         calinski_harabasz = metrics.calinski_harabasz_score(X, labels)
 
     else:
+        # Penalize algorithms with one cluster
         validity_score = -1000
         silhouette_score = -1000
         davies_bouldin = 1000
