@@ -3,11 +3,11 @@ from sklearn.model_selection import ParameterGrid
 
 
 def get_pipelines(preprocessing_config, cluster_config):
-    pipelines = []
+    pipelines = {}
     param_grid = {'preprocessing': preprocessing_config, 'clustering': cluster_config}
     param_list = list(ParameterGrid(param_grid))
 
-    for param in param_list:
+    for i, param in enumerate(param_list):
         pipe = Pipeline([
             ("preprocessing", param["preprocessing"]["model"]),
             ("clustering", param["clustering"]["model"])
@@ -23,6 +23,6 @@ def get_pipelines(preprocessing_config, cluster_config):
 
         param_space = {**preprocessing_params, **clustering_params}
 
-        pipelines.append({"pipe": pipe, "params": param_space})
+        pipelines[f"pipeline_{i}"] = {"pipe": pipe, "params": param_space}
 
     return pipelines
