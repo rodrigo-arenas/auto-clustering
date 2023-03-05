@@ -8,7 +8,7 @@
 .. |Codecov| image:: https://codecov.io/gh/rodrigo-arenas/auto-clustering/branch/master/graphs/badge.svg?branch=master&service=github
 .. _Codecov: https://codecov.io/github/rodrigo-arenas/auto-clustering?branch=main
 
-.. |PythonVersion| image:: https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue
+.. |PythonVersion| image:: https://img.shields.io/badge/python-3.9%20%7C%203.10-blue
 .. _PythonVersion : https://www.python.org/downloads/
 .. |PyPi| image:: https://badge.fury.io/py/auto-clustering.svg
 .. _PyPi: https://badge.fury.io/py/auto-clustering
