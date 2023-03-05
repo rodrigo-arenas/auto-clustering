@@ -4,10 +4,10 @@ import numpy as np
 import ray
 from ray import tune
 from ray.tune.search.optuna import OptunaSearch
-from ray.air import ScalingConfig
 from hdbscan import HDBSCAN
+from sklearn.cluster import DBSCAN
+from typing import List
 
-from ray.air import RunConfig
 from .configs import clustering_config, preprocessing_config, dimensionality_config
 from .pipelines import get_pipelines
 from .utils import score_candidate
@@ -24,8 +24,20 @@ class AutoClustering:
     ----------
     num_samples : int, default=100
         Number of times to sample from the hyperparameter space.
-    metric : str, default='validity_index'
+    metric : str, {'validity_index', 'davies_bouldin', 'silhouette', 'calinski_harabasz'}, default='validity_index'
         Metric to optimize.
+    preprocessing_models: dict, default=None
+        Custom dict with the preprocessing models to create the pipelines
+        If None, the default models will be used.
+        Check autoclustering.configs.preprocessing as format example
+    dimensionality_models: dict, default=None
+        Custom dict with the dimensionality reduction models to create the pipelines
+        If None, the default models will be used.
+        Check autoclustering.configs.dimensionality as format example
+    clustering_models: dict, default=None
+        Custom dict with the clustering models to create the pipelines
+        If None, the default models will be used.
+        Check autoclustering.configs.clustering as format example
     verbose : int, default=0
         Verbosity mode.
         0 = silent,
@@ -40,11 +52,16 @@ class AutoClustering:
     def __init__(self,
                  num_samples: int = 100,
                  metric: str = 'validity_index',
+                 preprocessing_models: List[dict] = None,
+                 dimensionality_models: List[dict] = None,
+                 clustering_models: List[dict] = None,
                  verbose=0,
                  n_jobs=1):
         self.num_samples = num_samples
         self.metric = metric
-
+        self.preprocessing_models = preprocessing_models or preprocessing_config
+        self.dimensionality_models = dimensionality_models or dimensionality_config
+        self.clustering_models = clustering_models or clustering_config
         self.verbose = verbose
         self.n_jobs = int(n_jobs or -1)
 
@@ -57,7 +74,7 @@ class AutoClustering:
                     category=UserWarning)
         else:
             available_cpus = multiprocessing.cpu_count()
-            if ray.is_initialized():
+            if ray.is_initialized():  # pragma: no cover
                 available_cpus = ray.cluster_resources()["CPU"]
 
             cpu_fraction = available_cpus / self.n_jobs
@@ -77,7 +94,9 @@ class AutoClustering:
         X : array-like of shape (n_samples, n_features)
             The data to fit. Can be for example a list, or an array.
         """
-        search_space = get_pipelines(preprocessing_config, clustering_config, dimensionality_config)
+        search_space = get_pipelines(self.preprocessing_models,
+                                     self.dimensionality_models,
+                                     self.clustering_models)
 
         config = {"algorithm": tune.choice(list(search_space.keys())),
                   "search_space": search_space}
@@ -119,7 +138,7 @@ class AutoClustering:
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        check_is_fitted(self)
+        check_is_fitted(self.best_estimator_)
 
         return self.best_estimator_.fit_predict(X)
 
@@ -138,7 +157,7 @@ class AutoClustering:
         labels : ndarray of shape (n_samples,)
             Index of the cluster each sample belongs to.
         """
-        check_is_fitted(self)
+        check_is_fitted(self.best_estimator_)
 
         if isinstance(self.best_estimator_.named_steps["clustering"], HDBSCAN):
             temp_params = {**self.best_params_, "clustering__prediction_data": True}
@@ -146,11 +165,13 @@ class AutoClustering:
             estimator.set_params(**temp_params)
             estimator.fit(X)
             return estimator.named_steps["clustering"].labels_
+        elif isinstance(self.best_estimator_.named_steps["clustering"], DBSCAN):
+            return self.fit_predict(X)
 
         return self.best_estimator_.predict(X)
 
     @staticmethod
-    def _train(config, X):
+    def _train(config, X):  # pragma: no cover
         """
         Runs one iteration of the pipeline search
 
@@ -187,7 +208,7 @@ class AutoClustering:
         if not metric_mode:
             raise ValueError(f"Metric must be one of "
                              f"['validity_index', 'davies_bouldin', 'silhouette', 'calinski_harabasz'], "
-                             f"but got {self.metric} instead")
+                             f"but got {self.metric} instead.")
 
         return metric_mode
 

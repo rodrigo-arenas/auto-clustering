@@ -2,7 +2,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import ParameterGrid
 
 
-def get_pipelines(preprocessing_config, cluster_config, dimensionality_config):
+def get_pipelines(preprocessing_config, dimensionality_config, cluster_config):
     pipelines = {}
     param_grid = {'preprocessing': preprocessing_config,
                   'dimensionality': dimensionality_config,
