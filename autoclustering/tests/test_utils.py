@@ -1,8 +1,8 @@
 from .. import AutoClustering
 from .. import score_candidate
-from sklearn.datasets import load_digits
+from sklearn.datasets import load_iris
 
-X, _ = load_digits(return_X_y=True)
+X, _ = load_iris(return_X_y=True)
 
 clustering = AutoClustering(num_samples=3,
                             metric='validity_index',

@@ -1,5 +1,5 @@
 import pytest
-from sklearn.datasets import load_digits
+from sklearn.datasets import load_iris
 from sklearn.pipeline import Pipeline
 from ray import tune
 from sklearn.cluster import DBSCAN, AffinityPropagation
@@ -7,7 +7,7 @@ from hdbscan import HDBSCAN
 
 from .. import AutoClustering
 
-X, _ = load_digits(as_frame=True, return_X_y=True)
+X, _ = load_iris(as_frame=True, return_X_y=True)
 pipe = AutoClustering(num_samples=3, metric="davies_bouldin", max_concurrent_trials=1)
 pipe.fit(X)
 
