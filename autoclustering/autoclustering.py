@@ -44,6 +44,11 @@ class AutoClustering:
     max_concurrent_trials : int, default=2
         Maximum number of trials to run concurrently. Must be non-negative.
         If None or 0, no limit will be applied
+    max_failures : int, default=2
+        Try to recover a trial at least this many times.
+        Ray will recover from the latest checkpoint if present.
+        Setting to -1 will lead to infinite recovery retries.
+        Setting to 0 will disable retries.
     n_jobs: int, default=1 Maximum number of trials to run
             concurrently. Must be non-negative. If None or 0, no limit will
             be applied.
@@ -56,6 +61,7 @@ class AutoClustering:
                  dimensionality_models: List[dict] = None,
                  clustering_models: List[dict] = None,
                  max_concurrent_trials: int = 2,
+                 max_failures: int = 2,
                  n_jobs=1,
                  verbose=0):
         self.num_samples = num_samples
@@ -64,6 +70,7 @@ class AutoClustering:
         self.dimensionality_models = dimensionality_models or dimensionality_config
         self.clustering_models = clustering_models or clustering_config
         self.max_concurrent_trials = max_concurrent_trials
+        self.max_failures = max_failures
         self.n_jobs = int(n_jobs or -1)
         self.verbose = verbose
 
@@ -111,6 +118,7 @@ class AutoClustering:
                             search_alg=OptunaSearch(),
                             resources_per_trial=self.resources_per_trial,
                             max_concurrent_trials=self.max_concurrent_trials,
+                            max_failures=self.max_failures,
                             verbose=self.verbose)
 
         best_result = analysis.best_result
