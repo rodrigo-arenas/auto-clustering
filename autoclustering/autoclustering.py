@@ -44,6 +44,9 @@ class AutoClustering:
         1 = only status updates,
         2 = status and brief results,
         3 = status and detailed results.
+    max_concurrent_trials : int, default=2
+        Maximum number of trials to run concurrently. Must be non-negative.
+        If None or 0, no limit will be applied
     n_jobs: int, default=1 Maximum number of trials to run
             concurrently. Must be non-negative. If None or 0, no limit will
             be applied.
@@ -55,15 +58,17 @@ class AutoClustering:
                  preprocessing_models: List[dict] = None,
                  dimensionality_models: List[dict] = None,
                  clustering_models: List[dict] = None,
-                 verbose=0,
-                 n_jobs=1):
+                 max_concurrent_trials: int = 2,
+                 n_jobs=1,
+                 verbose=0):
         self.num_samples = num_samples
         self.metric = metric
         self.preprocessing_models = preprocessing_models or preprocessing_config
         self.dimensionality_models = dimensionality_models or dimensionality_config
         self.clustering_models = clustering_models or clustering_config
-        self.verbose = verbose
+        self.max_concurrent_trials = max_concurrent_trials
         self.n_jobs = int(n_jobs or -1)
+        self.verbose = verbose
 
         if self.n_jobs < 0:
             resources_per_trial = {"cpu": 1}
@@ -108,6 +113,7 @@ class AutoClustering:
                             num_samples=self.num_samples,
                             search_alg=OptunaSearch(),
                             resources_per_trial=self.resources_per_trial,
+                            max_concurrent_trials=self.max_concurrent_trials,
                             verbose=self.verbose)
 
         best_result = analysis.best_result
