@@ -45,6 +45,7 @@ setup(
         "dirty-cat>=0.4.0",
         "hdbscan>=0.8.27",
     ],
+    keywords=['automl', 'ray-tune', 'clustering', 'hyperparameter-optimization'],
     python_requires=">=3.9",
     include_package_data=True,
 )
