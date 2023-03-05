@@ -6,7 +6,8 @@ X, _ = load_digits(return_X_y=True)
 
 clustering = AutoClustering(num_samples=3,
                             metric='validity_index',
-                            verbose=0)
+                            verbose=0,
+                            max_concurrent_trials=1)
 clustering.fit(X)
 
 

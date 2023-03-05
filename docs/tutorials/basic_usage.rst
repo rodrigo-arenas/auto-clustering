@@ -1,7 +1,8 @@
 How to Use auto-clustering
 ==========================
 
-auto-clustering performs metric optimization using ray-tune
+auto-clustering performs metric optimization using ray-tune.
+
 By defaults it search among a set of pipelines which contains common preprocessing,
 dimensionality reduction and clustering techniques.
 

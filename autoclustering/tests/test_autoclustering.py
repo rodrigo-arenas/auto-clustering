@@ -8,7 +8,7 @@ from hdbscan import HDBSCAN
 from .. import AutoClustering
 
 X, _ = load_digits(as_frame=True, return_X_y=True)
-pipe = AutoClustering(num_samples=5, metric="davies_bouldin")
+pipe = AutoClustering(num_samples=3, metric="davies_bouldin", max_concurrent_trials=1)
 pipe.fit(X)
 
 
@@ -68,8 +68,9 @@ def test_n_jobs_parameter():
 )
 def test_custom_models(config):
     model_config = [config]
-    custom_pipe = AutoClustering(num_samples=5,
-                                 clustering_models=model_config)
+    custom_pipe = AutoClustering(num_samples=3,
+                                 clustering_models=model_config,
+                                 max_concurrent_trials=1)
     custom_pipe.fit(X)
     labels = custom_pipe.predict(X)
     assert len(labels) == X.shape[0]
