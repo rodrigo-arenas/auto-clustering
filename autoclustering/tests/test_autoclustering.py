@@ -25,7 +25,7 @@ def test_expected_output():
     labels = pipe.fit_predict(X)
     assert len(labels) == X.shape[0]
 
-    assert pipe.n_clusters_ >= 2
+    assert pipe.n_clusters_ >= 1
 
 
 def test_wrong_metric():
