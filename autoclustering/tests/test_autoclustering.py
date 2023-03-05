@@ -18,13 +18,8 @@ def test_expected_properties():
 
 
 def test_expected_output():
-    pipe.fit(X)
-    labels = pipe.predict(X)
-    assert len(labels) == X.shape[0]
-
     labels = pipe.fit_predict(X)
     assert len(labels) == X.shape[0]
-
     assert pipe.n_clusters_ >= 1
 
 
@@ -72,8 +67,6 @@ def test_custom_models(config):
                                  clustering_models=model_config,
                                  max_concurrent_trials=1)
     custom_pipe.fit(X)
-    labels = custom_pipe.predict(X)
-    assert len(labels) == X.shape[0]
 
     labels = custom_pipe.fit_predict(X)
     assert len(labels) == X.shape[0]

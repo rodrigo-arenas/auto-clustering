@@ -4,15 +4,12 @@ import numpy as np
 import ray
 from ray import tune
 from ray.tune.search.optuna import OptunaSearch
-from hdbscan import HDBSCAN
-from sklearn.cluster import DBSCAN
 from typing import List
 
 from .configs import clustering_config, preprocessing_config, dimensionality_config
 from .pipelines import get_pipelines
 from .utils import score_candidate
 
-from sklearn.base import clone
 from sklearn.utils.validation import check_is_fitted
 
 
@@ -147,34 +144,6 @@ class AutoClustering:
         check_is_fitted(self.best_estimator_)
 
         return self.best_estimator_.fit_predict(X)
-
-    def predict(self, X):
-        """
-        Predict the closest cluster each sample in X belongs to.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix} of shape (n_samples, n_features)
-            New data to predict.
-
-        Returns
-        -------
-
-        labels : ndarray of shape (n_samples,)
-            Index of the cluster each sample belongs to.
-        """
-        check_is_fitted(self.best_estimator_)
-
-        if isinstance(self.best_estimator_.named_steps["clustering"], HDBSCAN):
-            temp_params = {**self.best_params_, "clustering__prediction_data": True}
-            estimator = clone(self.best_estimator_)
-            estimator.set_params(**temp_params)
-            estimator.fit(X)
-            return estimator.named_steps["clustering"].labels_
-        elif isinstance(self.best_estimator_.named_steps["clustering"], DBSCAN):
-            return self.fit_predict(X)
-
-        return self.best_estimator_.predict(X)
 
     @staticmethod
     def _train(config, X):  # pragma: no cover

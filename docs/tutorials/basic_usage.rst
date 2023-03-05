@@ -31,7 +31,7 @@ Example: Clustering Selection
    clustering.n_clusters_
    clustering.best_estimator_
 
-   clustering.predict(data)
+   clustering.fit_predict(data)
 
 You can also define your own preprocessing, dimensionality reduction and clustering steps.
 This can be done using the parameters preprocessing_models, dimensionality_models and clustering_models.
@@ -72,4 +72,4 @@ Example: Custom Model
    clustering.n_clusters_
    clustering.best_estimator_
 
-   clustering.predict(data)
+   clustering.fit_predict(data)

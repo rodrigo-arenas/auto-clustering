@@ -53,7 +53,7 @@ Example: Clustering Selection
    clustering.n_clusters_
    clustering.best_estimator_
 
-   clustering.predict(data)
+   clustering.fit_predict(data)
 
 Changelog
 #########
